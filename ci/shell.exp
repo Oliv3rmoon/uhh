@@ -1,0 +1,23 @@
+#!/usr/bin/expect -f
+# Drives a real interactive shell the way a person would: set up uhh, run a
+# command, then type plain `uhh` and check it explained that command.
+# Usage: expect ci/shell.exp bash|zsh|fish
+set shell [lindex $argv 0]
+set timeout 30
+log_user 1
+switch -- $shell {
+    bash { spawn bash --norc --noprofile -i; set init {eval "$(uhh --init bash)"} }
+    zsh  { spawn zsh -f -i; set init {eval "$(uhh --init zsh)"} }
+    fish { spawn fish -i --no-config; set init {uhh --init fish | source} }
+    default { puts "unknown shell $shell"; exit 2 }
+}
+sleep 1
+send -- "$init\r"
+sleep 1
+send -- "ls -la /tmp\r"
+sleep 1
+send -- "uhh\r"
+expect {
+    -re {uhh:  ls -la /tmp} { puts "\n== $shell: explained the last command"; send -- "exit\r"; exit 0 }
+    timeout { puts "\n== $shell: didn't explain it"; exit 1 }
+}

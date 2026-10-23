@@ -21,9 +21,9 @@ jobs:
       - run: cargo clippy --all-targets -- -D warnings
       - run: cargo test
       - run: cargo build
-      - name: Install fish and zsh (Linux)
+      - name: Install fish, zsh and expect (Linux)
         if: runner.os == 'Linux'
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq fish zsh
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq fish zsh expect
       - name: Install fish (macOS)
         if: runner.os == 'macOS'
         run: brew install fish
