@@ -1,0 +1,37 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - run: cargo fmt --check
+      - run: cargo clippy --all-targets -- -D warnings
+      - run: cargo test
+      - run: cargo build
+      - name: Install fish and zsh (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq fish zsh
+      - name: Install fish (macOS)
+        if: runner.os == 'macOS'
+        run: brew install fish
+      - name: Every shell explains the command before it
+        run: PATH="$PWD/target/debug:$PATH" UHH_REQUIRE_ALL=1 sh ci/shells.sh
+      - name: Reads this system's real manuals
+        run: |
+          out=$(NO_COLOR=1 target/debug/uhh tar -xzvf backup.tgz)
+          echo "$out"
+          echo "$out" | grep -E '^ +-x +[A-Z(]'
+          echo "$out" | grep -E '^ +-f backup.tgz +[A-Z(]'
