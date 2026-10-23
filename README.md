@@ -1,4 +1,4 @@
-<h1 align="center">uhh</h1>
+<p align="center"><img src="docs/logo.svg" alt="uhh" width="400"></p>
 
 <p align="center"><b>Not sure what a command does? Type <code>uhh</code> in front of it.</b><br>
 It explains every flag, pipe and redirect, straight from the man pages already on your machine.<br>
@@ -9,6 +9,10 @@ It explains every flag, pipe and redirect, straight from the man pages already o
 <a href="https://buymeacoffee.com/oliv3rmoon"><img src="https://img.shields.io/badge/Buy%20me%20a%20coffee-FFDD00?style=flat&logo=buymeacoffee&logoColor=black" alt="Buy me a coffee"></a>
 <a href="https://discord.gg/pSqgRU3YP9"><img src="https://img.shields.io/badge/Discord-The%20Commons-5865F2?style=flat&logo=discord&logoColor=white" alt="Discord"></a>
 </p>
+
+<p align="center"><img src="docs/demo.gif" alt="uhh explaining a curl | sudo bash install script and warning about it, defusing the xkcd tar bomb with tar -xzvf, explaining the git log command run just before it, walking through a fork bomb, and explaining itself" width="900"></p>
+
+<p align="center"><sub>Also as <a href="docs/demo.mp4">an MP4</a>.</sub></p>
 
 ```console
 $ uhh tar -xzvf backup.tgz

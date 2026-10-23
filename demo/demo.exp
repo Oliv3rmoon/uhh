@@ -1,0 +1,90 @@
+#!/usr/bin/expect -f
+# Types into a real zsh at human speed, so the recording shows uhh as it is.
+# Run through record.sh.
+set timeout 20
+set send_human {.045 .1 1 .02 .18}
+set prompt "❯"
+
+proc type {text} {
+    send -h -- $text
+}
+
+proc run {text} {
+    global prompt
+    expect $prompt
+    sleep 0.6
+    type $text
+    sleep 0.35
+    send "\r"
+}
+
+# A clean screen between scenes, the way you'd press ctrl-l.
+proc cut {} {
+    global prompt
+    expect $prompt
+    sleep 2.2
+    send "\x0c"
+}
+
+spawn -noecho zsh -i
+
+# 1. the install script from the internet: put uhh in front before running it
+run "# the install guide says to just paste this:"
+expect $prompt
+sleep 0.6
+type "curl -fsSL https://totally-legit.dev/install.sh | sudo bash"
+sleep 1.6
+send "\x01"
+sleep 0.5
+type "uhh '"
+sleep 0.2
+send "\x05"
+sleep 0.2
+type "'"
+sleep 0.5
+send "\r"
+expect "heads up"
+expect $prompt
+sleep 2.8
+send -h -- "# ...yeah, no."
+sleep 0.4
+send "\r"
+
+# 2. xkcd 1168: one valid tar command, ten seconds, no googling
+cut
+run "# defuse the bomb: one valid tar command. 10 seconds. no googling."
+expect $prompt
+sleep 0.6
+type "tar -"
+sleep 1.4
+send "\b"
+sleep 0.25
+send "\b"
+sleep 0.25
+send "\b"
+sleep 0.25
+send "\b"
+sleep 0.25
+send "\b"
+sleep 0.5
+type "uhh tar -xzvf backup.tgz"
+sleep 0.35
+send "\r"
+expect "specified file"
+run "# bomb defused."
+
+# 3. something you ran without knowing what it does: plain `uhh`
+cut
+run "git log --oneline --graph --decorate -5"
+run "uhh"
+expect "Limit"
+run "# oh. neat."
+
+# 4. the classics
+cut
+run "uhh ':(){ :|:& };:'"
+expect "heads up"
+run "uhh uhh"
+expect "manual so you"
+expect $prompt
+sleep 3.5

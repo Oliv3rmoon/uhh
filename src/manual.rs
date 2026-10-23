@@ -271,7 +271,7 @@ fn parse_header(line: &str) -> Option<(usize, &str, &str)> {
     if indent > 16 || !(first == '-' || first == '+') {
         return None;
     }
-    if !(second.is_ascii_alphanumeric() || matches!(second, '-' | '?' | '#' | '@')) {
+    if !(second.is_ascii_alphanumeric() || matches!(second, '-' | '?' | '#' | '@' | '<')) {
         return None;
     }
     match trimmed.find("  ") {
@@ -668,6 +668,10 @@ Commands:
             "SYNOPSIS\n       git commit [-a | --interactive] [-m <msg>]\n                  [--] [<pathspec>...]\n\nX\n",
         );
         assert_eq!(page.arguments, ["pathspec"]);
+        let page = Page::parse(
+            "     -<number>, -n <number>, --max-count=<number>\n         Limit the number of commits.\n",
+        );
+        assert_eq!(page.option("-n").unwrap().arg.as_deref(), Some("<number>"));
         let page = Page::parse("Usage:  docker run [OPTIONS] IMAGE [COMMAND] [ARG...]\n");
         assert_eq!(page.arguments, ["image", "command", "arg"]);
         let page = Page::parse("Usage: brew install [options] formula|cask [...]\n");

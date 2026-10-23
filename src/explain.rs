@@ -152,6 +152,9 @@ impl Manuals {
 }
 
 pub fn explain(line: &str, manuals: &mut Manuals) -> Explained {
+    if let Some(bomb) = fork_bomb(line) {
+        return bomb;
+    }
     let tokens = lex::lex(line);
     // Split at the operators between commands.
     let mut segments: Vec<(Vec<Token>, Option<Token>)> = Vec::new();
@@ -211,6 +214,49 @@ pub fn explain(line: &str, manuals: &mut Manuals) -> Explained {
         });
     }
     out
+}
+
+/// `:(){ :|:& };:` reads as noise, so it gets its own walkthrough.
+fn fork_bomb(line: &str) -> Option<Explained> {
+    if line.replace(' ', "") != ":(){:|:&};:" {
+        return None;
+    }
+    let open = line.find('{')?;
+    let close = line.rfind('}')?;
+    let semi = line.rfind(';')?;
+    let call = line.rfind(':')?;
+    let piece = |spans: (usize, usize), label: &str, text: &str, role: Role| Part {
+        spans: vec![spans],
+        label: label.into(),
+        text: text.into(),
+        more: Vec::new(),
+        role,
+        known: true,
+    };
+    Some(Explained {
+        parts: vec![
+            piece(
+                (0, line.find(')')? + 1),
+                ":()",
+                "makes a function called : (yes, just a colon)",
+                Role::Program,
+            ),
+            piece(
+                (open, close + 1),
+                "{ :|:& }",
+                "runs itself piped into itself, in the background: every call makes two more",
+                Role::Flag,
+            ),
+            piece((semi, semi + 1), ";", "then", Role::Op),
+            piece(
+                (call, call + 1),
+                ":",
+                "calls it once. that's all it takes",
+                Role::Program,
+            ),
+        ],
+        commands: Vec::new(),
+    })
 }
 
 fn is_separator(op: &str) -> bool {
@@ -276,7 +322,7 @@ fn command(words: &[Token], piped: bool, manuals: &mut Manuals, out: &mut Explai
         text: program_text(&program, &name, page.as_deref()),
         more: Vec::new(),
         role: Role::Program,
-        known: page.is_some() || BUILTINS.iter().any(|(b, _)| *b == name),
+        known: page.is_some() || BUILTINS.iter().any(|(b, _)| *b == name) || name == "uhh",
     });
     let mut cmd = Cmd {
         program: name.clone(),
@@ -426,6 +472,13 @@ fn part(token: &Token, label: String, text: String, role: Role, known: bool) -> 
 }
 
 fn program_text(program: &str, name: &str, page: Option<&Page>) -> String {
+    match name {
+        "uhh" => return "that's me (⊙_☉) I read the manual so you don't have to".into(),
+        "welp" if page.is_none() => {
+            return "fixes the command you just got wrong. we're friends".into();
+        }
+        _ => {}
+    }
     if let Some((_, text)) = BUILTINS.iter().find(|(b, _)| *b == name) {
         return format!("{text} (a shell builtin)");
     }
@@ -497,17 +550,32 @@ fn flag(
     };
     let found = page.and_then(|p| {
         p.option(name)
-            .map(|e| (name.to_string(), e))
-            .or_else(|| p.option_prefix(name).map(|(n, e)| (n.to_string(), e)))
+            .map(|e| (name.to_string(), e, false))
+            .or_else(|| {
+                p.option_prefix(name)
+                    .map(|(n, e)| (n.to_string(), e, false))
+            })
     });
-    if let Some((full, entry)) = found {
+    // `head -5`, `git log -3`: a number on its own means `-n <number>`.
+    let found = found.or_else(|| {
+        let digits = name.strip_prefix('-')?;
+        if digits.is_empty() || !digits.bytes().all(|b| b.is_ascii_digit()) {
+            return None;
+        }
+        let entry = page?.option("-n")?;
+        let arg = entry.arg.as_deref()?.to_lowercase();
+        (arg.contains("num") || arg.contains("count") || arg.contains("lines"))
+            .then(|| (name.to_string(), entry, true))
+    });
+    // `numeric`: the value is already in the word.
+    if let Some((full, entry, numeric)) = found {
         flags.push(full.clone());
         let mut p = entry_part(token, entry, page);
         if full != name {
             p.text = format!("short for {full}. {}", p.text);
         }
         out.parts.push(p);
-        return (entry.takes_arg() && inline.is_none()).then(|| out.parts.len() - 1);
+        return (entry.takes_arg() && inline.is_none() && !numeric).then(|| out.parts.len() - 1);
     }
     // `-xzvf`: several one-letter options at once.
     if !name.starts_with("--")
@@ -935,6 +1003,31 @@ mod tests {
         );
         let e = explain("rm -r x", &mut m);
         assert_eq!(e.parts[1].text, "same as -R: Remove the file hierarchy.");
+    }
+
+    #[test]
+    fn a_bare_number_is_dash_n() {
+        let mut m = Manuals::default();
+        m.insert(
+            "head",
+            Page::parse(
+                "     -n count, --lines=count\n             Print count lines of each file.\n",
+            ),
+        );
+        let e = explain("head -5 notes.txt", &mut m);
+        assert_eq!(e.parts[1].label, "-5");
+        assert_eq!(e.parts[1].text, "Print count lines of each file.");
+        assert_eq!(e.parts[2].label, "notes.txt");
+    }
+
+    #[test]
+    fn fork_bombs_get_a_walkthrough() {
+        let line = ":(){ :|:& };:";
+        let e = explain(line, &mut Manuals::default());
+        let labels: Vec<&str> = e.parts.iter().map(|p| p.label.as_str()).collect();
+        assert_eq!(labels, [":()", "{ :|:& }", ";", ":"]);
+        let (a, b) = e.parts[1].spans[0];
+        assert_eq!(&line[a..b], "{ :|:& }");
     }
 
     #[test]

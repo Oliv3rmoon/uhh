@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="570" height="160" viewBox="0 0 570 160" role="img" aria-label="uhh">
+  <title>uhh</title>
+  <rect x="8" y="22" width="220" height="116" rx="20" fill="#7DD3FC"/>
+  <text x="118" y="104" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="74" font-weight="800" fill="#141414">uhh</text>
+  <g fill="none" stroke="#8B8F98" stroke-linecap="round" stroke-width="7">
+    <path d="M290 38 Q264 80 290 122"/>
+    <path d="M488 38 Q514 80 488 122"/>
+    <circle cx="336" cy="78" r="23"/>
+    <circle cx="442" cy="84" r="12" stroke-width="6"/>
+    <path d="M374 112 H404"/>
+  </g>
+  <circle cx="336" cy="78" r="8" fill="#8B8F98"/>
+  <circle cx="442" cy="84" r="4" fill="#8B8F98"/>
+  <text x="534" y="62" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="48" font-weight="800" fill="#7DD3FC">?</text>
+</svg>

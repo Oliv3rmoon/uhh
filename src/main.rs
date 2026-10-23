@@ -62,7 +62,7 @@ fn main() -> ExitCode {
         let hint = if cli.last {
             "no command before this one to explain."
         } else {
-            "uhh what? give me a command: uhh tar -xzvf backup.tgz"
+            "uhh what? (⊙_☉) give me a command: uhh tar -xzvf backup.tgz"
         };
         eprintln!("{}", paint.line(hint));
         return ExitCode::from(2);
@@ -97,7 +97,7 @@ fn width() -> usize {
     columns.clamp(40, 120)
 }
 
-/// The newest line in UHH_HISTORY that isn't `uhh` itself.
+/// The newest line in UHH_HISTORY that isn't `uhh` itself or a comment.
 fn last_command() -> Option<String> {
     let history = env::var("UHH_HISTORY").ok()?;
     let mut lines: Vec<&str> = history.lines().map(str::trim).collect();
@@ -107,7 +107,11 @@ fn last_command() -> Option<String> {
     lines
         .into_iter()
         .rev()
-        .find(|line| !line.is_empty() && line.split_whitespace().next() != Some("uhh"))
+        .find(|line| {
+            !line.is_empty()
+                && !line.starts_with('#')
+                && line.split_whitespace().next() != Some("uhh")
+        })
         .map(str::to_string)
 }
 
