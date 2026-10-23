@@ -84,8 +84,10 @@ explainshell is great, and it lives in a browser. uhh lives where the command is
 ## Install
 
 ```sh
-cargo install uhh
+brew install oliv3rmoon/tap/uhh
 ```
+
+or `cargo install uhh`, or grab a build for macOS or Linux from the [releases](https://github.com/Oliv3rmoon/uhh/releases).
 
 Quote the command when it has a `|`, `>`, `&&` or `;` in it, so your shell hands the whole thing to uhh:
 
